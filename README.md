@@ -46,7 +46,7 @@ Twitch EventSub WebSocket ─▶ server/eventsub.js ─▶ src/round.js (pure st
 ## Safety and responsible design
 - **Untrusted input.** Chat text is treated as untrusted. It is drawn only with canvas `fillText`/`textContent`, is never evaluated, and is never sent to an AI model.
 - **What counts as an answer.** Answers are at most 4 words. Commands, links and @mentions are ignored. Each viewer can change their answer at most once every 3 s.
-- **Automatic filter.** An automatic filter (blocklist with leetspeak and repeat folding) drops abusive answers before they render. **It is not perfect.**
+- **Automatic filter.** A local filter drops hate speech, slurs, harassment ("kys", "kill yourself"), hate codes and profanity before they render. It also catches leetspeak, repeated letters, masked spellings (`f*ck`, `sh**`), spaced letters (`f u c k`) and compounds, and guards against known false positives ("Scunthorpe", "Nigeria", "grape", "raccoon"). **It is not perfect.**
 - **Twitch moderation.** Twitch moderation counts: a deleted message, a timeout or ban, or a chat clear removes the matching birds.
 - **Streamer controls.** **Pause**, **Hide answer** (blocked for the rest of the round), **Clear votes** and **Reset** act immediately.
 - **Privacy.**
