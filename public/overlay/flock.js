@@ -97,7 +97,12 @@ export function drawBird(context, bird, now, opacity = 1, reducedMotion = false)
 }
 
 export class Flock {
-  constructor() {
+  constructor({ fixedBirds = null, migrationDuration = MIGRATION_DURATION } = {}) {
+    this.fixedBirds = fixedBirds;
+    this.migrationDuration = migrationDuration;
+    this.roundBirds = null;
+    this.roundQuestion = null;
+    this.captions = [];
     this.birds = new Map();
     this.migrations = new Map();
     this.masks = new Map();
@@ -106,8 +111,18 @@ export class Flock {
 
   updateState(state, event, oldPositions, newPositions, now, reducedMotion) {
     const total = state.groups.reduce((sum, group) => sum + group.count, 0);
-    const perVoter = birdsPerVoter(total);
+    if (state.phase === 'idle' || (state.question !== undefined && state.question !== this.roundQuestion)) {
+      this.roundBirds = null;
+      this.roundQuestion = state.question;
+    }
+    if (this.fixedBirds === 'round' && this.roundBirds === null && total > 0) {
+      this.roundBirds = total <= 3 ? 60 : birdsPerVoter(total);
+    }
+    const perVoter = this.fixedBirds === 'round'
+      ? this.roundBirds ?? 60
+      : this.fixedBirds ?? birdsPerVoter(total);
     const active = new Set();
+    if (state.phase === 'idle') this.captions = [];
     for (const group of state.groups.slice(0, 5)) {
       const position = newPositions.get(group.answer);
       const count = group.voters.length * perVoter;
@@ -138,6 +153,7 @@ export class Flock {
       const destination = newPositions.get(event.to);
       const origin = oldPositions.get(event.from) || destination;
       if (moving.length && destination && origin) {
+        this.captions.push({ name: event.name, start: now });
         this.migrations.set(event.userId, {
           ...event, start: now, origin, destination, reducedMotion,
           starts: new Map(moving.map(bird => [bird.id, { x: bird.x, y: bird.y }])),
@@ -160,7 +176,7 @@ export class Flock {
       const position = positions.get(bird.answer);
       if (!position) continue;
       const migration = this.migrations.get(bird.userId);
-      if (migration && now - migration.start < (migration.reducedMotion ? REDUCED_MIGRATION_DURATION : MIGRATION_DURATION)) continue;
+      if (migration && now - migration.start < (migration.reducedMotion ? REDUCED_MIGRATION_DURATION : this.migrationDuration)) continue;
       const target = worldTarget(bird.point, position);
       if (!reducedMotion) {
         const wheel = now / 1800 + bird.phase;
@@ -221,7 +237,7 @@ export class Flock {
       if (layer === 'roosts' && migration) continue;
       if (layer === 'migrations' && !migration) continue;
       if (migration) {
-        const duration = migration.reducedMotion ? REDUCED_MIGRATION_DURATION : MIGRATION_DURATION;
+        const duration = migration.reducedMotion ? REDUCED_MIGRATION_DURATION : this.migrationDuration;
         const progress = Math.min(1, (now - migration.start) / duration);
         const start = migration.starts.get(bird.id);
         const position = positions.get(bird.answer);
@@ -235,8 +251,8 @@ export class Flock {
             const lift = 180 + random(bird.id, 12) * 80;
             const offset = (random(bird.id, 13) - 0.5) * 80;
             const elapsed = now - migration.start;
-            const point = migrationPoint(start, target, elapsed, stagger, lift, offset);
-            const before = migrationPoint(start, target, elapsed - 24, stagger, lift, offset);
+            const point = migrationPoint(start, target, elapsed, stagger, lift, offset, this.migrationDuration);
+            const before = migrationPoint(start, target, elapsed - 24, stagger, lift, offset, this.migrationDuration);
             bird.vx = point.x - before.x;
             bird.vy = point.y - before.y;
             bird.x = point.x;
@@ -244,11 +260,11 @@ export class Flock {
             if (point.progress > 0 && point.progress < 1) {
               context.save();
               context.strokeStyle = '#E8A15A';
-              context.lineWidth = 2;
+              context.lineWidth = 3;
               for (let segment = 1; segment <= 3; segment++) {
-                const ahead = migrationPoint(start, target, elapsed - (segment - 1) * 35, stagger, lift, offset);
-                const behind = migrationPoint(start, target, elapsed - segment * 35, stagger, lift, offset);
-                context.globalAlpha = (4 - segment) * 0.17 * Math.sin(Math.PI * point.progress);
+                const ahead = migrationPoint(start, target, elapsed - (segment - 1) * 55, stagger, lift, offset, this.migrationDuration);
+                const behind = migrationPoint(start, target, elapsed - segment * 55, stagger, lift, offset, this.migrationDuration);
+                context.globalAlpha = (4 - segment) * 0.27 * Math.sin(Math.PI * point.progress);
                 context.beginPath();
                 context.moveTo(ahead.x, ahead.y);
                 context.lineTo(behind.x, behind.y);
@@ -265,27 +281,22 @@ export class Flock {
     }
     if (layer === 'roosts') return;
     for (const [userId, migration] of this.migrations) {
-      const duration = migration.reducedMotion ? REDUCED_MIGRATION_DURATION : MIGRATION_DURATION;
-      const progress = Math.min(1, (now - migration.start) / duration);
-      if (progress >= 1) {
-        this.migrations.delete(userId);
-        continue;
-      }
-      if (migration.reducedMotion) continue;
-      const moving = [...this.birds.values()].filter(bird => bird.userId === userId);
-      if (!moving.length) continue;
-      const center = moving.reduce((sum, bird) => ({ x: sum.x + bird.x / moving.length, y: sum.y + bird.y / moving.length }), { x: 0, y: 0 });
+      const duration = migration.reducedMotion ? REDUCED_MIGRATION_DURATION : this.migrationDuration;
+      if (now - migration.start >= duration) this.migrations.delete(userId);
+    }
+    this.captions = this.captions.filter(caption => now - caption.start < 2800);
+    for (const caption of this.captions) {
       context.save();
       context.globalAlpha = 1;
       context.fillStyle = '#F3E9DC';
-      context.font = 'italic 36px Georgia';
+      context.font = 'italic 40px Georgia';
       context.lineWidth = 5;
       context.strokeStyle = '#141826';
       context.lineJoin = 'round';
       context.textAlign = 'center';
-      const caption = `${migration.name} changed their mind`;
-      context.strokeText?.(caption, center.x, center.y - 42);
-      context.fillText(caption, center.x, center.y - 42);
+      const text = `${caption.name} changed their mind`;
+      context.strokeText?.(text, 960, 220);
+      context.fillText(text, 960, 220);
       context.restore();
     }
   }

@@ -1,11 +1,11 @@
 import { Flock, drawBird } from './flock.js';
 import { drawBackground, drawChrome, drawLabels, interpolateLayout, layoutGroups } from './scene.js';
-import { createTransition, transitionFrame } from './motion.js';
+import { createTransition, heldState, HERO_MIGRATION_DURATION, transitionFrame } from './motion.js';
 
 const canvas = document.querySelector('#scene');
 const context = canvas.getContext('2d');
 const reducedMotion = matchMedia('(prefers-reduced-motion: reduce)');
-const flock = new Flock();
+const flock = new Flock({ fixedBirds: 'round', migrationDuration: HERO_MIGRATION_DURATION });
 let state = { groups: [], phase: 'idle', status: 'OFFLINE' };
 let transition = null;
 
@@ -25,10 +25,10 @@ function receiveState(message) {
   if (roundChanged || !update.state.groups.length) {
     transition = null;
   } else if (migration || (!transition && !sameAnswerOrder(state, update.state))) {
-    transition = createTransition(visible, update.state, now, migration, reducedMotion.matches);
+    transition = createTransition(visible, update.state, now, update.event?.type === 'migrate' ? update.event : null, reducedMotion.matches, HERO_MIGRATION_DURATION);
   } else if (transition) {
     transition.target = update.state;
-    transition.held = { ...transition.held, status: update.state.status, demo: update.state.demo, phase: update.state.phase };
+    transition.held = heldState(transition.held, update.state, { from: transition.held.groups.find(group => group.departing)?.answer });
   }
   state = update.state;
   const destinationLayout = transition ? layoutGroups(transition.held.groups) : layoutGroups(state.groups);

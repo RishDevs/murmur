@@ -49,7 +49,7 @@ export function drawBackground(context) {
 
 function drawLabel(context, group, position, leader, opacity) {
   context.save();
-  context.globalAlpha = Math.max(0, Math.min(1, opacity));
+  context.globalAlpha = Math.max(0, Math.min(1, opacity * (group.opacity ?? 1)));
   const label = `${group.answer.toLocaleUpperCase()} · ${group.count}`;
   let size = position.size;
   context.font = `${size}px ${SERIF}`;

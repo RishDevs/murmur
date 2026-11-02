@@ -28,3 +28,37 @@ test('leader layout remains held until landing before a 600 ms restage', () => {
   assert.equal(transitionFrame(reduced, 449).state.groups[0].answer, 'horse');
   assert.equal(transitionFrame(reduced, 450).progress, 0);
 });
+
+test('hero flight bursts upward before its arc and lands at 2.6 seconds', async () => {
+  const { HERO_MIGRATION_DURATION } = await import('./motion.js');
+  const start = { x: 100, y: 500 };
+  const end = { x: 900, y: 700 };
+  const burst = migrationPoint(start, end, 300, 200, 220, 10, HERO_MIGRATION_DURATION);
+  assert.equal(burst.x, start.x);
+  assert.equal(burst.y, start.y - 85);
+  assert.deepEqual(migrationPoint(start, end, 2600, 250, 220, 10, HERO_MIGRATION_DURATION), { ...end, progress: 1 });
+});
+
+test('flight labels show current counts and fade an empty source', async () => {
+  const { HERO_MIGRATION_DURATION } = await import('./motion.js');
+  const previous = { groups: [{ answer: 'biscuit', count: 1 }] };
+  const target = { groups: [{ answer: 'horse', count: 1 }] };
+  const transition = createTransition(previous, target, 100, { from: 'biscuit', to: 'horse' }, false, HERO_MIGRATION_DURATION);
+  const atStart = transitionFrame(transition, 100).state.groups;
+  assert.equal(atStart[0].count, 0);
+  assert.equal(atStart[0].opacity, 0.45);
+  assert.equal(atStart[1].count, 1);
+  assert.equal(transitionFrame(transition, 400).state.groups[0].opacity, 0);
+  assert.equal(transitionFrame(transition, 2699).state.groups[0].answer, 'biscuit');
+  assert.equal(transitionFrame(transition, 2700).state.groups[0].answer, 'horse');
+});
+
+test('nonempty departing label is dimmed with its updated count', () => {
+  const previous = { groups: [{ answer: 'biscuit', count: 2 }, { answer: 'horse', count: 1 }] };
+  const target = { groups: [{ answer: 'horse', count: 2 }, { answer: 'biscuit', count: 1 }] };
+  const transition = createTransition(previous, target, 0, { from: 'biscuit', to: 'horse' }, false, 2600);
+  const groups = transitionFrame(transition, 200).state.groups;
+  assert.equal(groups[0].count, 1);
+  assert.equal(groups[0].opacity, 0.45);
+  assert.equal(groups[1].count, 2);
+});
