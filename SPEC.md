@@ -47,7 +47,7 @@ Keepalive timeout and `session_reconnect` are handled. Reconnect uses backoff, a
 | Normalization | src/normalize.js | `Sir Neighs!` ≡ `sir neighs` | test/normalize.test.js | –/–/– |
 | Filter | src/moderation.js | slur/leet → rejected | test/moderation.test.js | –/–/– |
 | Mod delete honored | src/round.js | delete event → vote removed | round test | –/–/– |
-| Real Twitch | server/eventsub.js | real chat → flock | fixture test + live | –/–/– |
+| Real Twitch | server/eventsub.js | real chat → flock | fixture test + live | BUILT/VERIFIED (02:07 ET)/– |
 
 ## Done
 `npm test` passes. A cold start via README works. Two real accounts can complete the 60-second demo twice. Reset works without a restart.
