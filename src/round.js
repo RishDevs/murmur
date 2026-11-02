@@ -1,51 +1,92 @@
 import { normalize } from './normalize.js';
 import { isSafe } from './moderation.js';
-export const initialRound = () => ({ question: '', phase: 'idle', votes: {}, hidden: [], changes: {} });
-// Pure reducer: no clocks, I/O, or mutation. Events supplied by the caller include timestamps.
+
+export function initialRound() {
+  return { question: '', phase: 'idle', votes: {}, hidden: [], changes: {} };
+}
+
+function applyVote(round, action) {
+  if (round.phase !== 'open' || !action.userId || !Number.isFinite(action.at)) return null;
+  if (typeof action.text !== 'string' || !isSafe(action.text)) return null;
+  const answer = normalize(action.text);
+  if (!answer || round.hidden.includes(answer)) return null;
+
+  const previousVote = round.votes[action.userId];
+  if (previousVote?.answer === answer) {
+    previousVote.messageId = action.messageId;
+    return null;
+  }
+  const lastChange = round.changes[action.userId];
+  if (lastChange !== undefined && action.at - lastChange < 3000) return null;
+
+  round.votes[action.userId] = { answer, messageId: action.messageId || '' };
+  round.changes[action.userId] = action.at;
+  if (!previousVote) return null;
+  return {
+    type: 'migrate',
+    userId: action.userId,
+    name: String(action.name || 'A viewer').slice(0, 25),
+    from: previousVote.answer,
+    to: answer,
+  };
+}
+
+function hideAnswer(round, answer) {
+  const key = normalize(answer);
+  if (!key) return;
+  if (!round.hidden.includes(key)) round.hidden.push(key);
+  for (const [userId, vote] of Object.entries(round.votes)) {
+    if (vote.answer === key) delete round.votes[userId];
+  }
+}
+
+// The caller supplies the clock; the reducer never mutates its input.
 export function reduceRound(state, action) {
-  let s = structuredClone(state); let event = null;
+  const round = structuredClone(state);
+  let event = null;
   switch (action.type) {
     case 'start': {
       const question = String(action.question || '').trim().slice(0, 120);
       if (!question) return { state, event };
       return { state: { ...initialRound(), question, phase: 'open' }, event };
     }
-    case 'pause': if (s.phase !== 'idle') s.phase = s.phase === 'paused' ? 'open' : 'paused'; break;
-    case 'clear': s.votes = {}; s.changes = {}; break;
-    case 'reset': return { state: initialRound(), event };
-    case 'hide': {
-      const key = normalize(action.answer);
-      if (!key) return {state,event};
-      if (!s.hidden.includes(key)) s.hidden.push(key);
-      for (const [id,v] of Object.entries(s.votes)) if (v.answer === key) delete s.votes[id];
+    case 'pause':
+      if (round.phase !== 'idle') round.phase = round.phase === 'paused' ? 'open' : 'paused';
       break;
-    }
-    case 'vote': {
-      if (s.phase !== 'open' || !action.userId || !Number.isFinite(action.at) || typeof action.text !== 'string' || !isSafe(action.text)) return {state,event};
-      const answer = normalize(action.text);
-      if (!answer || s.hidden.includes(answer)) return {state,event};
-      const old = s.votes[action.userId];
-      if (old?.answer === answer) { s.votes[action.userId].messageId = action.messageId; break; }
-      if (s.changes[action.userId] !== undefined && action.at - s.changes[action.userId] < 3000) return {state,event};
-      const name = String(action.name || 'A viewer').slice(0, 25);
-      s.votes[action.userId] = { answer, messageId: action.messageId || '' };
-      s.changes[action.userId] = action.at;
-      if (old) event = { type:'migrate', userId: action.userId, name, from:old.answer, to:answer };
+    case 'clear':
+    case 'chatClear':
+      round.votes = {};
+      round.changes = {};
       break;
-    }
+    case 'reset':
+      return { state: initialRound(), event };
+    case 'hide':
+      hideAnswer(round, action.answer);
+      break;
+    case 'vote':
+      event = applyVote(round, action);
+      break;
     case 'delete': {
-      const vote = s.votes[action.userId];
-      if (vote && vote.messageId === action.messageId) delete s.votes[action.userId];
+      const vote = round.votes[action.userId];
+      if (vote && vote.messageId === action.messageId) delete round.votes[action.userId];
       break;
     }
-    case 'clearUser': delete s.votes[action.userId]; break;
-    case 'chatClear': s.votes = {}; s.changes = {}; break;
-    default: return {state,event};
+    case 'clearUser':
+      delete round.votes[action.userId];
+      break;
+    default:
+      return { state, event };
   }
-  return {state:s,event};
+  return { state: round, event };
 }
-export function snapshot(s) {
+
+export function snapshot(round) {
   const groups = {};
-  for (const [id,v] of Object.entries(s.votes)) (groups[v.answer] ||= []).push({ id });
-  return {question:s.question, phase:s.phase, groups:Object.entries(groups).map(([answer,voters])=>({answer,voters,count:voters.length})).sort((a,b)=>b.count-a.count || a.answer.localeCompare(b.answer))};
+  for (const [id, vote] of Object.entries(round.votes)) {
+    (groups[vote.answer] ||= []).push({ id });
+  }
+  const answers = Object.entries(groups)
+    .map(([answer, voters]) => ({ answer, voters, count: voters.length }))
+    .sort((first, second) => second.count - first.count || first.answer.localeCompare(second.answer));
+  return { question: round.question, phase: round.phase, groups: answers };
 }

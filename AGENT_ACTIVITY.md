@@ -4,3 +4,6 @@
 |---|---|---|---|---|---|
 | 01:50 | SPEC/DESIGN/TASKS/DECISIONS, repo scaffold | Claude Code (Opus 5.5) | docs | (scaffold) | — |
 | 01:52 | T1–T4 vertical slice started | Codex CLI (default model, high effort) | running | — | 01a19b00-27ba-7903-8e54-ce79935c0edc |
+| 01:55 | T1–T4 slice landed: 8/8 tests, sim loop verified in browser by Claude | Codex CLI gpt-6.1-terra (default gpt-6.1-sol at capacity) | npm test, screenshot | cf3dc5e | 01a19b00-27ba-7903-8e54-ce79935c0edc |
+| 01:57 | Readability refactor + boid flocks + migration polish | Codex CLI gpt-6.1-terra | running | — | 01a19b00-27ba-7903-8e54-ce79935c0edc |
+| 02:00 | Readable modules, boid flocks roosting on letterforms, migration ribbon, overlap fix | Codex CLI gpt-6.1-terra | 11/11 tests; Claude browser check | (this commit) | 01a19b00-27ba-7903-8e54-ce79935c0edc |

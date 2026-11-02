@@ -1,1 +1,111 @@
-<!doctype html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Murmur control</title><link rel="stylesheet" href="/control.css"></head><body><main><header><div><p class="eyebrow">MURMUR / STREAMER CONTROL</p><h1>Let the room<br><em>change its mind.</em></h1></div><div class="status"><span id="status">OFFLINE</span><strong id="stamp" hidden>SIMULATED</strong></div></header><div class="rule"></div><section class="layout"><div><p class="number">01 / THE QUESTION</p><label for="question">What are we asking chat?</label><textarea id="question" maxlength="120" placeholder="Name my horse?"></textarea><div class="actions"><button id="start">Start round <span>↗</span></button><button id="pause" class="secondary">Pause</button><button id="clear" class="secondary">Clear votes</button><button id="reset" class="secondary">Reset</button></div><p class="hint">Every short chat message is an answer. Each viewer has one vote, and can change it.</p><div class="connection"><p class="number">02 / CONNECTION</p><p id="connection">Connect your Twitch account to listen to your own channel.</p><button id="login" class="secondary">Connect Twitch ↗</button><p id="login-info"></p><p id="error" role="alert"></p></div></div><aside><div class="aside-head"><p class="number">LIVE ROUND</p><a href="/overlay" target="_blank" rel="noopener">Open overlay ↗</a></div><p id="round-question" class="round-question">No question yet.</p><p id="phase" class="hint">Start a round to invite answers.</p><div id="answers"></div><p class="foot">Chat’s opinion — not a fact.</p></aside></section></main><script type="module" src="/control.js"></script></body></html>
+<!DOCTYPE html>
+<html lang="en">
+ <head>
+  <meta charset="utf-8"/>
+  <meta content="width=device-width,initial-scale=1" name="viewport"/>
+  <title>
+   Murmur control
+  </title>
+  <link href="/control.css" rel="stylesheet"/>
+ </head>
+ <body>
+  <main>
+   <header>
+    <div>
+     <p class="eyebrow">
+      MURMUR / STREAMER CONTROL
+     </p>
+     <h1>
+      Let the room
+      <br/>
+      <em>
+       change its mind.
+      </em>
+     </h1>
+    </div>
+    <div class="status">
+     <span id="status">
+      OFFLINE
+     </span>
+     <strong hidden="" id="stamp">
+      SIMULATED
+     </strong>
+    </div>
+   </header>
+   <div class="rule">
+   </div>
+   <section class="layout">
+    <div>
+     <p class="number">
+      01 / THE QUESTION
+     </p>
+     <label for="question">
+      What are we asking chat?
+     </label>
+     <textarea id="question" maxlength="120" placeholder="Name my horse?"></textarea>
+     <p class="hint" id="start-hint">
+      Enter a question to start the round.
+     </p>
+     <div class="actions">
+      <button aria-describedby="start-hint" disabled="" id="start">
+       Start round
+       <span>
+        ↗
+       </span>
+      </button>
+      <button class="secondary" id="pause">
+       Pause
+      </button>
+      <button class="secondary" id="clear">
+       Clear votes
+      </button>
+      <button class="secondary" id="reset">
+       Reset
+      </button>
+     </div>
+     <p class="hint">
+      Every short chat message is an answer. Each viewer has one vote, and can change it.
+     </p>
+     <div class="connection">
+      <p class="number">
+       02 / CONNECTION
+      </p>
+      <p id="connection">
+       Connect your Twitch account to listen to your own channel.
+      </p>
+      <button class="secondary" id="login">
+       Connect Twitch ↗
+      </button>
+      <p id="login-info">
+      </p>
+      <p id="error" role="alert">
+      </p>
+     </div>
+    </div>
+    <aside>
+     <div class="aside-head">
+      <p class="number">
+       LIVE ROUND
+      </p>
+      <a href="/overlay" rel="noopener" target="_blank">
+       Open overlay ↗
+      </a>
+     </div>
+     <p class="round-question" id="round-question">
+      No question yet.
+     </p>
+     <p class="hint" id="phase">
+      Start a round to invite answers.
+     </p>
+     <div id="answers">
+     </div>
+     <p class="foot">
+      Chat’s opinion — not a fact.
+     </p>
+    </aside>
+   </section>
+  </main>
+  <script src="/control.js" type="module">
+  </script>
+ </body>
+</html>

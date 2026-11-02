@@ -1,1 +1,15 @@
-*{box-sizing:border-box}html,body{margin:0;width:100%;height:100%;overflow:hidden;background:#141826}canvas{display:block;width:100%;height:100%}
+* {
+  box-sizing: border-box;
+}
+html,body {
+  margin: 0;
+  width: 100%;
+  height: 100%;
+  overflow: hidden;
+  background: #141826;
+}
+canvas {
+  display: block;
+  width: 100%;
+  height: 100%;
+}

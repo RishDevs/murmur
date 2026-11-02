@@ -1,5 +1,62 @@
-const $=s=>document.querySelector(s); let current;
-async function post(action,body={}) { await fetch('/api/'+action,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(body)}); }
-$('#start').onclick=()=>post('start',{question:$('#question').value});
-for(const id of ['pause','clear','reset','login']) $('#'+id).onclick=()=>post(id);
-new EventSource('/events').onmessage=e=>{current=JSON.parse(e.data).state;$('#status').textContent=current.status;$('#stamp').hidden=!current.demo;$('#login').hidden=current.demo || current.status==='LIVE';$('#connection').textContent=current.demo?'Simulated viewers are active while a round is open.':current.status==='LIVE'?'Connected to your Twitch channel.':'Connect your Twitch account to listen to your own channel.';$('#login-info').textContent=current.login?`Visit ${current.login.url} and enter ${current.login.code}`:'';$('#error').textContent=current.loginError||'';$('#round-question').textContent=current.question||'No question yet.';$('#phase').textContent=current.phase==='paused'?'Paused':current.phase==='open'?'Accepting answers from chat.':'Start a round to invite answers.';$('#pause').textContent=current.phase==='paused'?'Resume':'Pause';const list=$('#answers');list.replaceChildren();for(const group of current.groups){const row=document.createElement('div');row.className='answer';const label=document.createElement('span');label.textContent=`${group.answer.toUpperCase()} · ${group.count}`;const hide=document.createElement('button');hide.className='secondary';hide.textContent='Hide';hide.onclick=()=>post('hide',{answer:group.answer});row.append(label,hide);list.append(row);}};
+const select = selector => document.querySelector(selector);
+const question = select('#question');
+const start = select('#start');
+
+async function post(action, body = {}) {
+  await fetch(`/api/${action}`, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify(body),
+  });
+}
+
+function updateStartButton() {
+  start.disabled = !question.value.trim();
+}
+
+function renderAnswers(groups) {
+  const list = select('#answers');
+  list.replaceChildren();
+  for (const group of groups) {
+    const row = document.createElement('div');
+    row.className = 'answer';
+    const label = document.createElement('span');
+    label.textContent = `${group.answer.toUpperCase()} · ${group.count}`;
+    const hide = document.createElement('button');
+    hide.className = 'secondary';
+    hide.textContent = 'Hide';
+    hide.onclick = () => post('hide', { answer: group.answer });
+    row.append(label, hide);
+    list.append(row);
+  }
+}
+
+function renderState(state) {
+  select('#status').textContent = state.status;
+  select('#stamp').hidden = !state.demo;
+  select('#login').hidden = state.demo || state.status === 'LIVE';
+  select('#connection').textContent = state.demo
+    ? 'Simulated viewers are active while a round is open.'
+    : state.status === 'LIVE'
+      ? 'Connected to your Twitch channel.'
+      : 'Connect your Twitch account to listen to your own channel.';
+  select('#login-info').textContent = state.login
+    ? `Visit ${state.login.url} and enter ${state.login.code}`
+    : '';
+  select('#error').textContent = state.loginError || '';
+  select('#round-question').textContent = state.question || 'No question yet.';
+  select('#phase').textContent = state.phase === 'paused'
+    ? 'Paused'
+    : state.phase === 'open' ? 'Accepting answers from chat.' : 'Start a round to invite answers.';
+  select('#pause').textContent = state.phase === 'paused' ? 'Resume' : 'Pause';
+  renderAnswers(state.groups);
+}
+
+start.onclick = () => post('start', { question: question.value });
+question.addEventListener('input', updateStartButton);
+for (const id of ['pause', 'clear', 'reset', 'login']) {
+  select(`#${id}`).onclick = () => post(id);
+}
+updateStartButton();
+const events = new EventSource('/events');
+events.onmessage = message => renderState(JSON.parse(message.data).state);

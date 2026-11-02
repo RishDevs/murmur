@@ -1,2 +1,34 @@
-import {test} from 'node:test';import assert from 'node:assert/strict';import {isSafe} from '../src/moderation.js';import {initialRound,reduceRound} from '../src/round.js';
-test('abusive text, leet and repeats are rejected before snapshot',()=>{for(const s of ['fuck','fuuuck','sh1t','b!tch','f4gg0t','n1gg3r'])assert.equal(isSafe(s),false,s);assert.equal(isSafe('sir neighs'),true);let state=reduceRound(initialRound(),{type:'start',question:'Q'}).state;for(const text of ['fuuuck','sh1t'])state=reduceRound(state,{type:'vote',userId:text,text,at:0}).state;assert.deepEqual(state.votes,{});});
+import { test } from 'node:test';
+import assert from 'node:assert/strict';
+import { isSafe } from '../src/moderation.js';
+import {
+  initialRound,
+  reduceRound
+} from '../src/round.js';
+test('abusive text, leet and repeats are rejected before snapshot', () => {
+  for (const s of [
+      'fuck',
+      'fuuuck',
+      'sh1t',
+      'b!tch',
+      'f4gg0t',
+      'n1gg3r'
+    ])
+    assert.equal(isSafe(s), false, s);
+  assert.equal(isSafe('sir neighs'), true);
+  let state = reduceRound(initialRound(), {
+    type: 'start',
+    question: 'Q'
+  }).state;
+  for (const text of [
+      'fuuuck',
+      'sh1t'
+    ])
+    state = reduceRound(state, {
+      type: 'vote',
+      userId: text,
+      text,
+      at: 0
+    }).state;
+  assert.deepEqual(state.votes, {});
+});

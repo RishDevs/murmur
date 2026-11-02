@@ -1,1 +1,40 @@
-[{"metadata":{"message_type":"notification"},"payload":{"subscription":{"type":"channel.chat.message_delete"},"event":{"target_user_id":"u1","message_id":"m1"}}},{"metadata":{"message_type":"notification"},"payload":{"subscription":{"type":"channel.chat.clear_user_messages"},"event":{"target_user_id":"u1"}}},{"metadata":{"message_type":"notification"},"payload":{"subscription":{"type":"channel.chat.clear"},"event":{}}}]
+[
+  {
+    "metadata": {
+      "message_type": "notification"
+    },
+    "payload": {
+      "subscription": {
+        "type": "channel.chat.message_delete"
+      },
+      "event": {
+        "target_user_id": "u1",
+        "message_id": "m1"
+      }
+    }
+  },
+  {
+    "metadata": {
+      "message_type": "notification"
+    },
+    "payload": {
+      "subscription": {
+        "type": "channel.chat.clear_user_messages"
+      },
+      "event": {
+        "target_user_id": "u1"
+      }
+    }
+  },
+  {
+    "metadata": {
+      "message_type": "notification"
+    },
+    "payload": {
+      "subscription": {
+        "type": "channel.chat.clear"
+      },
+      "event": {}
+    }
+  }
+]
