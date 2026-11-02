@@ -175,6 +175,27 @@ if (!demo && auth.clientId) {
   }).catch(() => {});
 }
 
+// Twitch user tokens last about four hours. A live socket keeps reporting LIVE after
+// the token expires, so renew it early and reconnect on the fresh token.
+async function keepTokenFresh() {
+  if (demo || !auth.token || loginBusy) return;
+  let valid;
+  try {
+    valid = await auth.validate();
+  } catch {
+    return; // Network blip: try again on the next tick.
+  }
+  if (valid && auth.user.expires_in > 30 * 60) return;
+  try {
+    await auth.refresh();
+    connectTwitch();
+  } catch {
+    status = 'SIGN IN AGAIN';
+    broadcast();
+  }
+}
+setInterval(keepTokenFresh, 10 * 60 * 1000).unref();
+
 const server = http.createServer(async (request, response) => {
   const url = new URL(request.url, 'http://localhost');
   response.setHeader('X-Content-Type-Options', 'nosniff');
