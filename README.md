@@ -72,8 +72,8 @@ Claude Code wrote the spec and briefs, reviewed each diff in a real browser, and
 1. **Rishi Kolluru ([@RishDevs](https://github.com/RishDevs)):** owner. Idea selection, art direction, Twitch account, demo.
 2. **OpenAI Codex:** primary implementation agent.
 3. **Claude (Claude Code):** chief of staff and orchestrator. Spec, design brief, review, docs.
-4. **Cursor:** scoped engineering/UI assistant (role is updated below if it is used).
-5. **Antigravity:** independent QA/visual review (role is updated below if it is used).
+4. **Cursor:** planned as a scoped reviewer, but its CLI was blocked at the workspace-trust prompt, so it did not contribute code. We did not bypass the prompt.
+5. **Antigravity:** one independent visual QA pass on screenshots (curved migration paths, leader swap timing, bird shape), which Codex then fixed.
 
 The AI tools are credited for their actual roles. They are not GitHub collaborators or co-owners.
 
