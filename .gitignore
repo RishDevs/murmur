@@ -1,0 +1,6 @@
+node_modules/
+.env
+.murmur/
+personal-docs/
+*.log
+.DS_Store
