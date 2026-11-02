@@ -197,3 +197,47 @@ button:disabled {
   opacity: .45;
   cursor: not-allowed;
 }
+
+.status {
+  min-width: 240px;
+  padding: 18px 20px;
+  border: 1px solid #716762;
+}
+.status #status {
+  font-size: clamp(22px, 2.5vw, 34px);
+  font-weight: bold;
+  line-height: 1.2;
+  letter-spacing: .06em;
+}
+.status #status[data-status="LIVE"]:before { color: #a8d6ad; }
+.status #status[data-status="SIGN IN AGAIN"]:before { color: #df7770; }
+.channel {
+  margin: 10px 0 0;
+  font-size: 16px;
+  letter-spacing: .02em;
+  overflow-wrap: anywhere;
+}
+#stamp[hidden], .channel[hidden] { display: none; }
+.shortcuts {
+  margin: 22px 0 15px;
+  color: #cfc1b4;
+  font: 13px/1.7 Arial, sans-serif;
+}
+.shortcuts span { color: #a99c93; }
+kbd {
+  padding: 3px 6px;
+  border: 1px solid #716762;
+  color: #f3e9dc;
+  font: bold 12px Arial, sans-serif;
+}
+.overlay-link {
+  display: inline-block;
+  border-bottom: 1px solid #e8a15a;
+  padding: 8px 0;
+  font-size: 16px;
+  font-weight: bold;
+}
+@media (max-width: 750px) {
+  header { flex-wrap: wrap; }
+  .status { min-width: 200px; text-align: left; }
+}

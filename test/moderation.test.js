@@ -32,3 +32,21 @@ test('abusive text, leet and repeats are rejected before snapshot', () => {
     }).state;
   assert.deepEqual(state.votes, {});
 });
+
+test('ordinary words and punctuation are not substring matches', () => {
+  for (const text of ['class', 'assess', 'cocktail', 'yes!', 'this is class!', 'scunthorpe']) {
+    assert.equal(isSafe(text), true, text);
+  }
+  for (const text of ['b!tch', 'sh1t!', 'f4gg0t', 'a fuuuck!']) {
+    assert.equal(isSafe(text), false, text);
+  }
+});
+
+test('compounds and spaced-out letters are rejected', () => {
+  for (const text of ['fuckyou', 'shitty', 'dumbbitch', 'f u c k', 's h 1 t']) {
+    assert.equal(isSafe(text), false, text);
+  }
+  for (const text of ['a b c', 'shipshape', 'biscuit', 'sir neighs']) {
+    assert.equal(isSafe(text), true, text);
+  }
+});

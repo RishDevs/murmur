@@ -72,3 +72,21 @@ test('status and disclaimer occupy separate horizontal regions', () => {
   const disclaimer = context.labels.find(label => label.text.startsWith('Chat’s opinion'));
   assert.ok(status.x < disclaimer.x - disclaimer.text.length * 12);
 });
+
+test('reset during migration clears all birds, flight state and captions', () => {
+  globalThis.document = { createElement: () => ({ getContext: mockMask }) };
+  try {
+    const flock = new Flock({ fixedBirds: 'round', migrationDuration: 2600 });
+    const first = { question: 'Q', phase: 'open', groups: [{ answer: 'horse', count: 1, voters: [{ id: 'a' }] }] };
+    const second = { question: 'Q', phase: 'open', groups: [{ answer: 'biscuit', count: 1, voters: [{ id: 'a' }] }] };
+    flock.updateState(first, null, new Map(), layoutGroups(first.groups), 0, false);
+    flock.updateState(second, { type: 'migrate', userId: 'a', name: 'Avery', from: 'horse', to: 'biscuit' }, layoutGroups(first.groups), layoutGroups(second.groups), 100, false);
+    assert.equal(flock.migrations.size, 1);
+    flock.updateState({ question: '', phase: 'idle', groups: [] }, null, layoutGroups(second.groups), new Map(), 200, false);
+    assert.equal(flock.birds.size, 0);
+    assert.equal(flock.migrations.size, 0);
+    assert.equal(flock.captions.length, 0);
+  } finally {
+    delete globalThis.document;
+  }
+});

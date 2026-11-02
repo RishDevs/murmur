@@ -1,6 +1,6 @@
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
-import { Flock } from './flock.js';
+import { Flock } from '../public/overlay/flock.js';
 
 function maskContext() {
   const pixels = new Uint8ClampedArray(1000 * 240 * 4);

@@ -1,5 +1,7 @@
 # Agent activity
 
+Times are approximate (ET), logged by Claude as each step completed.
+
 | Time (ET) | Task | Provider | Evidence | Commit | Codex session |
 |---|---|---|---|---|---|
 | 01:50 | SPEC/DESIGN/TASKS/DECISIONS, repo scaffold | Claude Code (Opus 5.5) | docs | (scaffold) | — |
@@ -15,3 +17,7 @@
 | 02:09 | REAL MIGRATION: same Twitch account changed "sir neighs" → "biscuit"; round shows biscuit·1, sir neighs gone (one opinion per viewer) | Human + Claude verification | /events state | (this commit) | 01a19b00-27ba-7903-8e54-ce79935c0edc |
 | 02:16 | Hero migration: 2.6 s burst + arcs, honest in-flight counts, 60 birds/voter in small rounds (fix for founder not noticing real migration) | Codex CLI gpt-6.1-terra | 18/18 tests; Claude harness screenshots | (this commit) | 01a19b00-27ba-7903-8e54-ce79935c0edc |
 | 02:20 | HERO VERIFIED LIVE: founder changed answer in real Twitch chat; birds visibly migrated on overlay | Human-observed | founder confirmation | 2a8c34b | 01a19b00-27ba-7903-8e54-ce79935c0edc |
+| 02:30 | Operator mode (LIVE+channel, S/P/R shortcuts, overlay link), reconnect/edge-case tests, tests moved to test/ | Codex CLI gpt-6.1-terra | 24 tests; Claude browser check of control | (this commit) | 01a19b00-27ba-7903-8e54-ce79935c0edc |
+| 02:30 | Moderation fix: Codex whole-token change missed compounds ("fuckyou", "shitty") and spaced letters; switched to word-edge matching + rejoin, with tests | Claude Code (small integration fix) | 25/25 tests | (this commit) | — |
+| 02:30 | Cursor review not run: workspace-trust prompt persisted after founder approval; not bypassed (no --trust) | Cursor CLI | — | — | — |
+| 02:30 | Restart reloaded saved token and returned LIVE without re-login | Claude verification | /events state | (this commit) | — |

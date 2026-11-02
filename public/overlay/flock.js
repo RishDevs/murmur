@@ -122,7 +122,10 @@ export class Flock {
       ? this.roundBirds ?? 60
       : this.fixedBirds ?? birdsPerVoter(total);
     const active = new Set();
-    if (state.phase === 'idle') this.captions = [];
+    if (state.phase === 'idle') {
+      this.captions = [];
+      this.migrations.clear();
+    }
     for (const group of state.groups.slice(0, 5)) {
       const position = newPositions.get(group.answer);
       const count = group.voters.length * perVoter;
@@ -147,6 +150,10 @@ export class Flock {
     }
     for (const id of this.birds.keys()) {
       if (!active.has(id)) this.birds.delete(id);
+    }
+    const activeVoters = new Set([...this.birds.values()].map(bird => bird.userId));
+    for (const userId of this.migrations.keys()) {
+      if (!activeVoters.has(userId)) this.migrations.delete(userId);
     }
     if (event?.type === 'migrate') {
       const moving = [...this.birds.values()].filter(bird => bird.userId === event.userId);

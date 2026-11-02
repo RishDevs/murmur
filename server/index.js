@@ -34,7 +34,7 @@ await loadEnvironment();
 const serverPort = Number(process.env.PORT) || port;
 
 function currentView() {
-  return { ...snapshot(round), status, demo, login: loginInfo, loginError };
+  return { ...snapshot(round), status, demo, channel: demo ? null : auth.user?.login || null, login: loginInfo, loginError };
 }
 
 function broadcast(event = null) {

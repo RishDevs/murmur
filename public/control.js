@@ -1,3 +1,5 @@
+import { shortcutAction } from './shortcuts.js';
+
 const select = selector => document.querySelector(selector);
 const question = select('#question');
 const start = select('#start');
@@ -33,6 +35,10 @@ function renderAnswers(groups) {
 
 function renderState(state) {
   select('#status').textContent = state.status;
+  select('#status').dataset.status = state.status;
+  const channel = select('#channel');
+  channel.hidden = !state.channel;
+  channel.textContent = state.channel ? `@${state.channel}` : '';
   select('#stamp').hidden = !state.demo;
   select('#login').hidden = state.demo || state.status === 'LIVE';
   select('#connection').textContent = state.demo
@@ -57,6 +63,18 @@ question.addEventListener('input', updateStartButton);
 for (const id of ['pause', 'clear', 'reset', 'login']) {
   select(`#${id}`).onclick = () => post(id);
 }
+document.addEventListener('keydown', event => {
+  const action = shortcutAction(event);
+  if (!action) return;
+  const button = select(`#${action}`);
+  if (button.disabled) return;
+  event.preventDefault();
+  button.click();
+});
 updateStartButton();
 const events = new EventSource('/events');
 events.onmessage = message => renderState(JSON.parse(message.data).state);
+events.onerror = () => {
+  select('#status').textContent = 'RECONNECTING';
+  select('#status').dataset.status = 'RECONNECTING';
+};

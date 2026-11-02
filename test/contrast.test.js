@@ -1,6 +1,6 @@
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
-import { birdAppearance } from './contrast.js';
+import { birdAppearance } from '../public/overlay/contrast.js';
 
 test('birds use the higher contrast colour for the sky behind them', () => {
   assert.deepEqual(birdAppearance(0), { color: '#E9DCCB', opacity: 0.85 });

@@ -1,6 +1,6 @@
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
-import { createTransition, migrationPoint, transitionFrame } from './motion.js';
+import { createTransition, migrationPoint, transitionFrame } from '../public/overlay/motion.js';
 
 test('staggered quadratic paths rise above their chord and land at their own targets', () => {
   const start = { x: 100, y: 500 };
@@ -30,7 +30,7 @@ test('leader layout remains held until landing before a 600 ms restage', () => {
 });
 
 test('hero flight bursts upward before its arc and lands at 2.6 seconds', async () => {
-  const { HERO_MIGRATION_DURATION } = await import('./motion.js');
+  const { HERO_MIGRATION_DURATION } = await import('../public/overlay/motion.js');
   const start = { x: 100, y: 500 };
   const end = { x: 900, y: 700 };
   const burst = migrationPoint(start, end, 300, 200, 220, 10, HERO_MIGRATION_DURATION);
@@ -40,7 +40,7 @@ test('hero flight bursts upward before its arc and lands at 2.6 seconds', async 
 });
 
 test('flight labels show current counts and fade an empty source', async () => {
-  const { HERO_MIGRATION_DURATION } = await import('./motion.js');
+  const { HERO_MIGRATION_DURATION } = await import('../public/overlay/motion.js');
   const previous = { groups: [{ answer: 'biscuit', count: 1 }] };
   const target = { groups: [{ answer: 'horse', count: 1 }] };
   const transition = createTransition(previous, target, 100, { from: 'biscuit', to: 'horse' }, false, HERO_MIGRATION_DURATION);
