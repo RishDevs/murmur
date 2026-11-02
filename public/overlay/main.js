@@ -59,10 +59,11 @@ function render(now) {
   const positions = animatedPositions(progress);
   drawBackground(context);
   flock.update(positions, now, reducedMotion.matches);
-  flock.draw(context, positions, now, reducedMotion.matches);
+  flock.draw(context, positions, now, reducedMotion.matches, 'roosts');
   drawIdleBirds(now);
   drawLabels(context, state, previous, reducedMotion.matches ? linear : progress);
   drawChrome(context, state);
+  flock.draw(context, positions, now, reducedMotion.matches, 'migrations');
   requestAnimationFrame(render);
 }
 

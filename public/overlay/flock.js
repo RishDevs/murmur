@@ -1,3 +1,5 @@
+import { birdAppearance } from './contrast.js';
+
 const MAX_BIRDS = 1080;
 const BIRDS_PER_VOTER = 36;
 const FLIGHT_DURATION = 1600;
@@ -67,9 +69,10 @@ export function drawBird(context, bird, now, opacity = 1, reducedMotion = false)
   const wing = reducedMotion ? 0.3 : Math.sin(now / 130 + bird.phase) * 0.8;
   const halfSpan = bird.size / 2;
   context.save();
-  context.globalAlpha *= opacity;
-  context.strokeStyle = '#0E0F14';
-  context.lineWidth = 2.4;
+  const appearance = birdAppearance(bird.y);
+  context.globalAlpha *= opacity * appearance.opacity;
+  context.strokeStyle = appearance.color;
+  context.lineWidth = 3;
   context.lineCap = 'round';
   context.lineJoin = 'round';
   context.beginPath();
@@ -106,7 +109,7 @@ export class Flock {
           if (!bird) {
             const target = worldTarget(points[voterIndex * perVoter + index], position);
             bird = { id, userId: voter.id, x: target.x, y: target.y, vx: 0, vy: 0,
-              size: 9 + random(id, 1) * 5, phase: random(id, 2) * Math.PI * 2 };
+              size: 12 + random(id, 1) * 4, phase: random(id, 2) * Math.PI * 2 };
             this.birds.set(id, bird);
           }
           bird.answer = group.answer;
@@ -146,6 +149,11 @@ export class Flock {
       const migration = this.migrations.get(bird.userId);
       if (migration && now - migration.start < (migration.reducedMotion ? 350 : FLIGHT_DURATION)) continue;
       const target = worldTarget(bird.point, position);
+      if (!reducedMotion) {
+        const wheel = now / 1800 + bird.phase;
+        target.x += Math.cos(wheel) * 5;
+        target.y += Math.sin(wheel) * 4;
+      }
       if (reducedMotion) {
         bird.x = target.x;
         bird.y = target.y;
@@ -194,9 +202,11 @@ export class Flock {
     }
   }
 
-  draw(context, positions, now, reducedMotion) {
+  draw(context, positions, now, reducedMotion, layer = 'all') {
     for (const bird of this.birds.values()) {
       const migration = this.migrations.get(bird.userId);
+      if (layer === 'roosts' && migration) continue;
+      if (layer === 'migrations' && !migration) continue;
       if (migration) {
         const duration = migration.reducedMotion ? 350 : FLIGHT_DURATION;
         const progress = Math.min(1, (now - migration.start) / duration);
@@ -223,6 +233,7 @@ export class Flock {
       }
       drawBird(context, bird, now, 1, reducedMotion);
     }
+    if (layer === 'roosts') return;
     for (const [userId, migration] of this.migrations) {
       const duration = migration.reducedMotion ? 350 : FLIGHT_DURATION;
       const progress = Math.min(1, (now - migration.start) / duration);
@@ -244,9 +255,14 @@ export class Flock {
       context.stroke();
       context.globalAlpha = 1;
       context.fillStyle = '#F3E9DC';
-      context.font = 'italic 30px Georgia';
+      context.font = 'italic 36px Georgia';
+      context.lineWidth = 5;
+      context.strokeStyle = '#141826';
+      context.lineJoin = 'round';
       context.textAlign = 'center';
-      context.fillText(`${migration.name} changed their mind`, center.x, center.y - 42);
+      const caption = `${migration.name} changed their mind`;
+      context.strokeText?.(caption, center.x, center.y - 42);
+      context.fillText(caption, center.x, center.y - 42);
       context.restore();
     }
   }

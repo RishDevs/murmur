@@ -4,11 +4,11 @@ const SERIF = '"Iowan Old Style", Palatino, Georgia, serif';
 
 export function layoutGroups(groups) {
   const positions = [
-    { x: 960, y: 390, width: 1050, height: 220, labelY: 675, size: 112 },
-    { x: 380, y: 710, width: 520, height: 115, labelY: 865, size: 46 },
-    { x: 1540, y: 710, width: 520, height: 115, labelY: 865, size: 46 },
-    { x: 665, y: 845, width: 400, height: 85, labelY: 955, size: 40 },
-    { x: 1255, y: 845, width: 400, height: 85, labelY: 955, size: 40 },
+    { x: 960, y: 400, width: 1250, height: 250, labelY: 565, size: 105 },
+    { x: 380, y: 700, width: 540, height: 125, labelY: 790, size: 46 },
+    { x: 1540, y: 700, width: 540, height: 125, labelY: 790, size: 46 },
+    { x: 665, y: 840, width: 400, height: 95, labelY: 914, size: 40 },
+    { x: 1255, y: 840, width: 400, height: 95, labelY: 914, size: 40 },
   ];
   return new Map(groups.slice(0, 5).map((group, index) => [group.answer, positions[index]]));
 }
