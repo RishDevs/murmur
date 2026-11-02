@@ -73,6 +73,14 @@ export function drawLabels(context, state, previous, progress) {
   const previousLeader = previous.groups[0]?.answer;
   const flipped = currentLeader && previousLeader && currentLeader !== previousLeader;
 
+  if (progress < 1) {
+    for (const group of previous.groups.slice(0, 5)) {
+      if (!currentPositions.has(group.answer)) {
+        drawLabel(context, group, previousPositions.get(group.answer), group.answer === previousLeader, 1 - progress);
+      }
+    }
+  }
+
   for (const [index, group] of state.groups.slice(0, 5).entries()) {
     const destination = currentPositions.get(group.answer);
     const origin = previousPositions.get(group.answer) || destination;

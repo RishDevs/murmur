@@ -1,8 +1,8 @@
 import { birdAppearance } from './contrast.js';
+import { migrationPoint, MIGRATION_DURATION, REDUCED_MIGRATION_DURATION } from './motion.js';
 
 const MAX_BIRDS = 1080;
 const BIRDS_PER_VOTER = 36;
-const FLIGHT_DURATION = 1600;
 const NEIGHBOR_RADIUS = 48;
 
 function hash(value) {
@@ -15,10 +15,6 @@ function hash(value) {
 
 function random(seed, index) {
   return (hash(`${seed}:${index}`) % 10000) / 10000;
-}
-
-function ease(value) {
-  return value * value * (3 - 2 * value);
 }
 
 export function birdsPerVoter(voterCount) {
@@ -52,11 +48,19 @@ export function sampleLetterforms(answer, count) {
     }
   }
   if (!points.length) return Array.from({ length: count }, () => ({ x: 0, y: 0 }));
-  // Traverse the mask with a coprime stride so even a small flock spans the word.
+  // Stratify samples, then shuffle them so each voter spans the whole word.
   const selected = [];
   for (let index = 0; index < count; index++) {
     const offset = Math.floor((index + random(answer, index)) * points.length / count);
-    selected.push(points[Math.min(points.length - 1, offset)]);
+    const point = points[Math.min(points.length - 1, offset)];
+    selected.push({
+      x: point.x + (random(answer, index + 100) - 0.5) * 0.024,
+      y: point.y + (random(answer, index + 200) - 0.5) * 0.08,
+    });
+  }
+  for (let index = selected.length - 1; index > 0; index--) {
+    const swap = Math.floor(random(answer, index + 300) * (index + 1));
+    [selected[index], selected[swap]] = [selected[swap], selected[index]];
   }
   return selected;
 }
@@ -66,20 +70,29 @@ function worldTarget(point, position) {
 }
 
 export function drawBird(context, bird, now, opacity = 1, reducedMotion = false) {
-  const wing = reducedMotion ? 0.3 : Math.sin(now / 130 + bird.phase) * 0.8;
-  const halfSpan = bird.size / 2;
-  context.save();
+  const flap = reducedMotion ? 0.7 : 0.65 + Math.sin(now / 130 + bird.phase) * 0.3;
+  const span = bird.size / 2;
+  const heading = Math.hypot(bird.vx || 0, bird.vy || 0) > 0.05
+    ? Math.atan2(bird.vy, bird.vx)
+    : 0;
   const appearance = birdAppearance(bird.y);
+  context.save();
   context.globalAlpha *= opacity * appearance.opacity;
-  context.strokeStyle = appearance.color;
-  context.lineWidth = 3;
-  context.lineCap = 'round';
-  context.lineJoin = 'round';
+  context.fillStyle = appearance.color;
+  context.translate(bird.x, bird.y);
+  context.rotate(heading);
   context.beginPath();
-  context.moveTo(bird.x - halfSpan, bird.y - wing * halfSpan);
-  context.lineTo(bird.x, bird.y);
-  context.lineTo(bird.x + halfSpan, bird.y - wing * halfSpan);
-  context.stroke();
+  context.moveTo(span * 0.8, 0);
+  context.lineTo(span * 0.05, -span * 0.23);
+  context.lineTo(-span * 0.35, -span * flap);
+  context.lineTo(-span * 0.52, -span * flap * 0.92);
+  context.lineTo(-span * 0.3, -span * 0.16);
+  context.lineTo(-span * 0.9, 0);
+  context.lineTo(-span * 0.3, span * 0.16);
+  context.lineTo(-span * 0.52, span * flap * 0.92);
+  context.lineTo(-span * 0.35, span * flap);
+  context.lineTo(span * 0.05, span * 0.23);
+  context.fill();
   context.restore();
 }
 
@@ -147,7 +160,7 @@ export class Flock {
       const position = positions.get(bird.answer);
       if (!position) continue;
       const migration = this.migrations.get(bird.userId);
-      if (migration && now - migration.start < (migration.reducedMotion ? 350 : FLIGHT_DURATION)) continue;
+      if (migration && now - migration.start < (migration.reducedMotion ? REDUCED_MIGRATION_DURATION : MIGRATION_DURATION)) continue;
       const target = worldTarget(bird.point, position);
       if (!reducedMotion) {
         const wheel = now / 1800 + bird.phase;
@@ -208,7 +221,7 @@ export class Flock {
       if (layer === 'roosts' && migration) continue;
       if (layer === 'migrations' && !migration) continue;
       if (migration) {
-        const duration = migration.reducedMotion ? 350 : FLIGHT_DURATION;
+        const duration = migration.reducedMotion ? REDUCED_MIGRATION_DURATION : MIGRATION_DURATION;
         const progress = Math.min(1, (now - migration.start) / duration);
         const start = migration.starts.get(bird.id);
         const position = positions.get(bird.answer);
@@ -218,14 +231,31 @@ export class Flock {
             drawBird(context, { ...bird, ...start }, now, 1 - progress, true);
             drawBird(context, { ...bird, ...target }, now, progress, true);
           } else {
-            const offset = Number(bird.id.split(':').at(-1));
-            const t = ease(Math.max(0, Math.min(1, (progress * 1.18) - offset / 36 * 0.18)));
-            const gather = Math.min(1, t * 5);
-            const settle = Math.max(0, (t - 0.8) * 5);
-            const flightX = migration.origin.x + (position.x - migration.origin.x) * t;
-            const flightY = migration.origin.y + (position.y - migration.origin.y) * t - Math.sin(Math.PI * t) * 180;
-            bird.x = flightX + (start.x - migration.origin.x) * (1 - gather) + (target.x - position.x) * settle;
-            bird.y = flightY + (start.y - migration.origin.y) * (1 - gather) + (target.y - position.y) * settle + Math.sin(offset * 1.7) * 8 * Math.sin(Math.PI * t);
+            const stagger = random(bird.id, 11) * 250;
+            const lift = 180 + random(bird.id, 12) * 80;
+            const offset = (random(bird.id, 13) - 0.5) * 80;
+            const elapsed = now - migration.start;
+            const point = migrationPoint(start, target, elapsed, stagger, lift, offset);
+            const before = migrationPoint(start, target, elapsed - 24, stagger, lift, offset);
+            bird.vx = point.x - before.x;
+            bird.vy = point.y - before.y;
+            bird.x = point.x;
+            bird.y = point.y;
+            if (point.progress > 0 && point.progress < 1) {
+              context.save();
+              context.strokeStyle = '#E8A15A';
+              context.lineWidth = 2;
+              for (let segment = 1; segment <= 3; segment++) {
+                const ahead = migrationPoint(start, target, elapsed - (segment - 1) * 35, stagger, lift, offset);
+                const behind = migrationPoint(start, target, elapsed - segment * 35, stagger, lift, offset);
+                context.globalAlpha = (4 - segment) * 0.17 * Math.sin(Math.PI * point.progress);
+                context.beginPath();
+                context.moveTo(ahead.x, ahead.y);
+                context.lineTo(behind.x, behind.y);
+                context.stroke();
+              }
+              context.restore();
+            }
             drawBird(context, bird, now);
           }
           continue;
@@ -235,7 +265,7 @@ export class Flock {
     }
     if (layer === 'roosts') return;
     for (const [userId, migration] of this.migrations) {
-      const duration = migration.reducedMotion ? 350 : FLIGHT_DURATION;
+      const duration = migration.reducedMotion ? REDUCED_MIGRATION_DURATION : MIGRATION_DURATION;
       const progress = Math.min(1, (now - migration.start) / duration);
       if (progress >= 1) {
         this.migrations.delete(userId);
@@ -246,13 +276,6 @@ export class Flock {
       if (!moving.length) continue;
       const center = moving.reduce((sum, bird) => ({ x: sum.x + bird.x / moving.length, y: sum.y + bird.y / moving.length }), { x: 0, y: 0 });
       context.save();
-      context.strokeStyle = '#E8A15A';
-      context.globalAlpha = 0.7 * Math.sin(Math.PI * progress);
-      context.lineWidth = 3;
-      context.beginPath();
-      context.moveTo(moving[0].x, moving[0].y);
-      for (const bird of moving.slice(1)) context.lineTo(bird.x, bird.y);
-      context.stroke();
       context.globalAlpha = 1;
       context.fillStyle = '#F3E9DC';
       context.font = 'italic 36px Georgia';
