@@ -1,0 +1,1 @@
+{"metadata":{"message_type":"notification","message_id":"delivery-1"},"payload":{"subscription":{"type":"channel.chat.message"},"event":{"chatter_user_id":"u1","chatter_user_name":"Avery","message_id":"m1","message":{"text":"Sir Neighs!"}}}}

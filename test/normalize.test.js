@@ -1,0 +1,2 @@
+import {test} from 'node:test';import assert from 'node:assert/strict';import {normalize} from '../src/normalize.js';
+test('conservative normalization and input constraints',()=>{assert.equal(normalize('Sir Neighs!'),'sir neighs');assert.equal(normalize('  Sír   NEIGHS '),'sir neighs');for(const input of ['!command','hello @someone','https://example.com','www.example.com','one two three four five','x'.repeat(81),'x'.repeat(29),'']) assert.equal(normalize(input),null,input);});
