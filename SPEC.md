@@ -43,7 +43,7 @@ Keepalive timeout and `session_reconnect` are handled. Reconnect uses backoff, a
 | Claim | Module | Action → result | Test | BUILT/VERIFIED/DEMOED |
 |---|---|---|---|---|
 | Latest answer once | src/round.js | 2 msgs same user → 1 vote | test/round.test.js | –/–/– |
-| Migration | src/round.js + public/overlay.js | change answer → `migrate` event → birds travel | round test + manual | –/–/– |
+| Migration | src/round.js + public/overlay/* | change answer → `migrate` event → birds travel | round + motion tests, live | BUILT/VERIFIED live 02:20 ET/– |
 | Normalization | src/normalize.js | `Sir Neighs!` ≡ `sir neighs` | test/normalize.test.js | –/–/– |
 | Filter | src/moderation.js | slur/leet → rejected | test/moderation.test.js | –/–/– |
 | Mod delete honored | src/round.js | delete event → vote removed | round test | –/–/– |
