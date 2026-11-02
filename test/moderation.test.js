@@ -42,6 +42,26 @@ test('ordinary words and punctuation are not substring matches', () => {
   }
 });
 
+test('hate, harassment and masked spellings are rejected', () => {
+  for (const text of [
+    'f*ck', 'f**k', 'sh**', 'sh*t', 'b*tch', 'n#gga', 'f@gg*t', 'c*nt', '****',
+    'kys', 'k y s', 'kill yourself', 'go kill urself', 'heil hitler', '1488',
+    'chink', 'spics', 'kike', 'tranny', 'dyke', 'raghead', 'retarded', 'motherfucker',
+    'rapist', 'n i g g a', 'niggggerr', 'fuuuuck', 'asshhole', 'fvck', 'phuck', 'fuk', 'stfu',
+  ]) {
+    assert.equal(isSafe(text), false, text);
+  }
+});
+
+test('innocent words containing short slurs still pass', () => {
+  for (const text of [
+    'grape', 'raccoon', 'spice', 'pakistan', 'class', 'assess', 'japan', 'cocktail',
+    'scunthorpe', 'shipshape', 'night', 'nigeria', 'niger', 'fukushima', 'mango', 'yes!', 'a b c', 'dickens', '5 stars',
+  ]) {
+    assert.equal(isSafe(text), true, text);
+  }
+});
+
 test('compounds and spaced-out letters are rejected', () => {
   for (const text of ['fuckyou', 'shitty', 'dumbbitch', 'f u c k', 's h 1 t']) {
     assert.equal(isSafe(text), false, text);

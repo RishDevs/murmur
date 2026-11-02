@@ -21,3 +21,4 @@ Times are approximate (ET), logged by Claude as each step completed.
 | 02:30 | Moderation fix: Codex whole-token change missed compounds ("fuckyou", "shitty") and spaced letters; switched to word-edge matching + rejoin, with tests | Claude Code (small integration fix) | 25/25 tests | (this commit) | — |
 | 02:30 | Cursor review not run: workspace-trust prompt persisted after founder approval; not bypassed (no --trust) | Cursor CLI | — | — | — |
 | 02:30 | Restart reloaded saved token and returned LIVE without re-login | Claude verification | /events state | (this commit) | — |
+| 02:45 | Founder request: broad hate/harassment filter (slurs across race/ethnicity/sexuality/gender/disability, kys/kill yourself, 1488, heil hitler), masked spellings (f*ck, sh**, n#gga, ****), spaced letters, phonetic variants; false-positive guards (scunthorpe, nigeria, grape, raccoon, spice, pakistan, japan, fukushima) | Claude Code | 27/27 tests | (this commit) | — |
